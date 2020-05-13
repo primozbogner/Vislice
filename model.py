@@ -39,7 +39,7 @@ class Igra:
         return ' '.join(self.napacne_crke())
 
     def ugibaj(self, crka):
-        crka = crka.upper
+        crka = crka.upper()
 
         if crka in self.crke:
             return PONOVLJENA_CRKA
