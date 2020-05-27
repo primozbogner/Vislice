@@ -1,4 +1,5 @@
 import random
+import json
 
 STEVILO_DOVOLJENIH_NAPAK = 10
 
@@ -9,6 +10,9 @@ NAPACNA_CRKA = '-'
 ZACETEK = 'S'
 ZMAGA = 'W'
 PORAZ = 'X'
+
+DATOTEKA_STANJE = 'stanje.json'
+DATOTEKA_BESEDE = 'besede.txt' 
 
 class Igra:
     def __init__(self, geslo, crke=None):
@@ -59,7 +63,7 @@ class Igra:
                     return NAPACNA_CRKA
 
 bazen_besed = []
-for beseda in open('besede.txt', encoding="utf-8"):
+for beseda in open(DATOTEKA_BESEDE, encoding="utf-8"):
     bazen_besed.append(beseda.strip().upper())
 
 def nova_igra():
@@ -67,8 +71,9 @@ def nova_igra():
     return Igra(beseda)
 
 class Vislice:
-    def __init__(self):
-        self.igre = {}
+    def __init__(self, datoteka_s_stanjem):
+        self.datoteka_s_stanjem = datoteka_s_stanjem
+        self.nalozi_igre_iz_datoteke()
 
     def prost_id_igre(self):
         if len(self.igre) == 0:
@@ -80,10 +85,22 @@ class Vislice:
         id_igre = self.prost_id_igre()
         igra = nova_igra()
         self.igre[id_igre] = (igra, ZACETEK)
+        self.zapisi_igre_v_datoteko()
         return id_igre
 
     def ugibaj(self, id_igre, crka):
         igra, _ = self.igre[id_igre]
         stanje = igra.ugibaj(crka)
         self.igre[id_igre] = (igra, stanje)
+        self.zapisi_igre_v_datoteko()
+
+    def nalozi_igre_iz_datoteke(self):
+        with open(self.datoteka_s_stanjem, 'r', encoding='utf-8') as f:
+            igre = json.load(f)
+            self.igre = {int(id_igre): (Igra(geslo, crke), stanje) for id_igre, (geslo, crke, stanje) in igre.items()}
+
+    def zapisi_igre_v_datoteko(self):
+        with open(self.datoteka_s_stanjem, 'w', encoding='utf-8') as f:
+            igre = {id_igre: (igra.geslo, igra.crke, stanje) for id_igre, (igra, stanje) in self.igre.items()}
+            json.dump(igre, f, ensure_ascii=False)
         
